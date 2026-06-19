@@ -1,0 +1,18 @@
+/* Badge — small status / accent pill */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 0.3rem 0.7rem;
+  background: var(--color-brand-50);
+  color: var(--color-brand-700);
+  border-radius: var(--radius-pill);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semi);
+  letter-spacing: 0.02em;
+}
+.badge--heat    { background: rgba(245,105,28,0.12); color: var(--color-heat-600); }
+.badge--success { background: rgba(16,185,129,0.12); color: var(--color-success); }
+.badge--neutral { background: var(--color-ink-100); color: var(--color-ink-700); }
+.badge--inverse { background: rgba(255,255,255,0.16); color: var(--color-white); }

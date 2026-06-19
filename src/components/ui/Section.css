@@ -1,0 +1,38 @@
+/* Section — vertically padded page section with optional background variants. */
+
+.section {
+  padding-block: clamp(3.5rem, 2rem + 6vw, 6.5rem);
+}
+
+.section--tight    { padding-block: clamp(2.5rem, 1.5rem + 4vw, 4.5rem); }
+.section--hero     { padding-block: clamp(4.5rem, 3rem + 8vw, 8rem); }
+.section--muted    { background: var(--surface-muted); }
+.section--inverse  { background: var(--color-ink-900); color: var(--color-ink-100); }
+.section--brand    { background: linear-gradient(135deg, var(--color-brand-600), var(--color-brand-800)); color: var(--color-white); }
+.section--brand-soft { background: linear-gradient(135deg, var(--color-brand-50), #f7faff); }
+
+.section--inverse h1, .section--inverse h2, .section--inverse h3, .section--inverse h4 { color: var(--color-white); }
+.section--inverse p { color: var(--color-ink-300); }
+.section--brand h1, .section--brand h2, .section--brand h3, .section--brand h4 { color: var(--color-white); }
+.section--brand p { color: rgba(255,255,255,0.88); }
+
+.section__header {
+  text-align: center;
+  max-width: 720px;
+  margin: 0 auto var(--space-10);
+}
+
+.section__header--left {
+  text-align: left;
+  margin-inline: 0;
+}
+
+.section__header .text-eyebrow {
+  display: inline-block;
+  margin-bottom: var(--space-3);
+}
+
+.section__header h2 { margin-bottom: var(--space-3); }
+.section__header p  { font-size: var(--fs-md); color: var(--color-ink-600); }
+.section--inverse .section__header p,
+.section--brand .section__header p { color: rgba(255,255,255,0.85); }

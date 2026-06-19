@@ -1,0 +1,79 @@
+/* Card — used for service tiles, package tiers, testimonials, etc. */
+
+.card {
+  background: var(--surface-card);
+  border: 1px solid var(--color-ink-200);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  transition: transform var(--transition-base),
+              box-shadow var(--transition-base),
+              border-color var(--transition-base);
+}
+
+.card--interactive {
+  cursor: pointer;
+}
+.card--interactive:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--color-brand-200);
+}
+
+.card--shadow { box-shadow: var(--shadow-md); }
+.card--flat   { border: 0; }
+
+.card--padded { padding: var(--space-8); }
+.card--tight  { padding: var(--space-4); gap: var(--space-2); }
+
+.card--accent-brand {
+  border-top: 4px solid var(--color-brand-500);
+}
+.card--accent-heat {
+  border-top: 4px solid var(--color-heat-500);
+}
+
+.card--inverse {
+  background: var(--color-ink-900);
+  color: var(--color-ink-100);
+  border-color: var(--color-ink-800);
+}
+.card--inverse h3, .card--inverse h4 { color: var(--color-white); }
+.card--inverse p { color: var(--color-ink-300); }
+
+.card__icon {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-md);
+  background: var(--color-brand-50);
+  color: var(--color-brand-600);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.card__icon--heat {
+  background: rgba(245, 105, 28, 0.12);
+  color: var(--color-heat-600);
+}
+
+.card__title {
+  font-size: var(--fs-xl);
+  margin-bottom: var(--space-1);
+}
+
+.card__footer {
+  margin-top: auto;
+  padding-top: var(--space-4);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.card--selected {
+  border-color: var(--color-brand-500);
+  box-shadow: 0 0 0 3px rgba(11, 108, 255, 0.18), var(--shadow-md);
+}
