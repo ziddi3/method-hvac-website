@@ -1,0 +1,15 @@
+{
+  "name": "method-hvac-website",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Customer-facing Method HVAC website with transparent build-your-own quote flow, service pages, and GoHighLevel-ready lead capture.",
+  "type": "module",
+  "main": "src/api/quote-submit.js",
+  "scripts": {
+    "check": "node --check src/lib/quotePayload.js && node --check src/lib/ghlClient.js && node --check src/api/quote-submit.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "MIT"
+}
