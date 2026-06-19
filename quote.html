@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Use Method HVAC's multi-step quote builder to compare HVAC installation, repair, and maintenance pricing with transparent allowances and GST."
+    />
+    <title>Build Your Quote | Method HVAC</title>
+  </head>
+  <body data-page="quote">
+    <div class="site-shell">
+      <header data-site-header></header>
+      <main>
+        <section class="page-hero section">
+          <div class="container narrow">
+            <span class="eyebrow">Build Your Quote</span>
+            <h1>Transparent HVAC estimates in four steps.</h1>
+            <p class="lead">
+              Choose your service, home size, and package level to see a practical
+              estimate range with labour, materials, and GST shown clearly. Your
+              final form submission stores a structured lead payload ready for future
+              GoHighLevel integration.
+            </p>
+          </div>
+        </section>
+
+        <section class="section">
+          <div class="container">
+            <form class="quote-builder" data-quote-form>
+              <ol class="step-list" aria-label="Quote builder steps">
+                <li class="step-pill" data-step-pill>1. Service</li>
+                <li class="step-pill" data-step-pill>2. Home &amp; package</li>
+                <li class="step-pill" data-step-pill>3. Review estimate</li>
+                <li class="step-pill" data-step-pill>4. Contact details</li>
+              </ol>
+
+              <div class="quote-layout">
+                <div class="quote-panels">
+                  <section class="form-card step-panel" data-step-panel>
+                    <div class="step-header">
+                      <span class="eyebrow">Step 1</span>
+                      <h2>Select the service you need.</h2>
+                    </div>
+                    <div class="option-grid">
+                      <label class="option-card">
+                        <input type="radio" name="service" value="ac-install" checked />
+                        <span class="option-card-content">
+                          <strong>Air conditioner installation</strong>
+                          <span>Central cooling equipment, lineset coordination, and startup.</span>
+                        </span>
+                      </label>
+                      <label class="option-card">
+                        <input type="radio" name="service" value="furnace-install" />
+                        <span class="option-card-content">
+                          <strong>Furnace installation</strong>
+                          <span>High-efficiency furnace equipment with venting and gas considerations.</span>
+                        </span>
+                      </label>
+                      <label class="option-card">
+                        <input type="radio" name="service" value="service-repair" />
+                        <span class="option-card-content">
+                          <strong>Service and repair</strong>
+                          <span>Diagnostics, parts allowance, and on-site repair labour planning.</span>
+                        </span>
+                      </label>
+                      <label class="option-card">
+                        <input type="radio" name="service" value="maintenance" />
+                        <span class="option-card-content">
+                          <strong>Maintenance</strong>
+                          <span>Preventive inspection, cleaning, testing, and seasonal tune-up support.</span>
+                        </span>
+                      </label>
+                    </div>
+                    <div class="step-actions">
+                      <button class="button button-primary" type="button" data-next-step>
+                        Continue to home details
+                      </button>
+                    </div>
+                  </section>
+
+                  <section class="form-card step-panel" data-step-panel hidden>
+                    <div class="step-header">
+                      <span class="eyebrow">Step 2</span>
+                      <h2>Match the estimate to your home and comfort goals.</h2>
+                    </div>
+                    <div class="form-grid">
+                      <label>
+                        Home size
+                        <select name="homeSize">
+                          <option value="compact">Up to 1,200 sq. ft.</option>
+                          <option value="family" selected>1,200 to 2,000 sq. ft.</option>
+                          <option value="large">2,000 to 3,000 sq. ft.</option>
+                          <option value="estate">3,000+ sq. ft.</option>
+                        </select>
+                      </label>
+                    </div>
+                    <div class="option-grid">
+                      <label class="option-card">
+                        <input type="radio" name="packageTier" value="budget" />
+                        <span class="option-card-content">
+                          <strong>Budget</strong>
+                          <span>Practical entry point focused on reliability and essential scope.</span>
+                        </span>
+                      </label>
+                      <label class="option-card">
+                        <input type="radio" name="packageTier" value="standard" checked />
+                        <span class="option-card-content">
+                          <strong>Standard</strong>
+                          <span>Balanced efficiency, comfort, and long-term value for most households.</span>
+                        </span>
+                      </label>
+                      <label class="option-card">
+                        <input type="radio" name="packageTier" value="premium" />
+                        <span class="option-card-content">
+                          <strong>Premium</strong>
+                          <span>Higher efficiency, stronger warranty expectations, and more advanced comfort features.</span>
+                        </span>
+                      </label>
+                    </div>
+                    <div class="step-actions">
+                      <button class="button button-secondary" type="button" data-prev-step>
+                        Back
+                      </button>
+                      <button class="button button-primary" type="button" data-next-step>
+                        Review estimate
+                      </button>
+                    </div>
+                  </section>
+
+                  <section class="form-card step-panel" data-step-panel hidden>
+                    <div class="step-header">
+                      <span class="eyebrow">Step 3</span>
+                      <h2>Review your transparent pricing summary.</h2>
+                    </div>
+                    <div class="review-grid">
+                      <div class="review-card">
+                        <p class="detail-label">Selected service</p>
+                        <p class="detail-value" data-selected-service></p>
+                      </div>
+                      <div class="review-card">
+                        <p class="detail-label">Home size</p>
+                        <p class="detail-value" data-selected-home-size></p>
+                      </div>
+                      <div class="review-card">
+                        <p class="detail-label">Package tier</p>
+                        <p class="detail-value" data-selected-package></p>
+                      </div>
+                    </div>
+                    <p class="detail-copy" data-selected-description></p>
+                    <div class="step-actions">
+                      <button class="button button-secondary" type="button" data-prev-step>
+                        Back
+                      </button>
+                      <button class="button button-primary" type="button" data-next-step>
+                        Share contact details
+                      </button>
+                    </div>
+                  </section>
+
+                  <section class="form-card step-panel" data-step-panel hidden>
+                    <div class="step-header">
+                      <span class="eyebrow">Step 4</span>
+                      <h2>Tell us how to reach you.</h2>
+                    </div>
+                    <div class="form-grid">
+                      <label>
+                        Name
+                        <input type="text" name="name" autocomplete="name" required />
+                      </label>
+                      <label>
+                        Email
+                        <input type="email" name="email" autocomplete="email" required />
+                      </label>
+                      <label>
+                        Phone
+                        <input type="tel" name="phone" autocomplete="tel" required />
+                      </label>
+                      <label>
+                        Postal code
+                        <input type="text" name="postalCode" autocomplete="postal-code" />
+                      </label>
+                      <label>
+                        Preferred timing
+                        <select name="timeline">
+                          <option>As soon as possible</option>
+                          <option>Within 2 weeks</option>
+                          <option>Within 30 days</option>
+                          <option>Planning ahead</option>
+                        </select>
+                      </label>
+                      <label class="field-full">
+                        Notes
+                        <textarea
+                          name="notes"
+                          rows="5"
+                          placeholder="Add any current equipment details, comfort concerns, or scheduling notes."
+                        ></textarea>
+                      </label>
+                    </div>
+                    <input type="hidden" name="leadPayload" />
+                    <div class="step-actions">
+                      <button class="button button-secondary" type="button" data-prev-step>
+                        Back
+                      </button>
+                      <button class="button button-primary" type="submit">
+                        Send estimate request
+                      </button>
+                    </div>
+                    <p class="form-status" data-quote-status aria-live="polite"></p>
+                  </section>
+                </div>
+
+                <aside class="estimate-card" aria-live="polite">
+                  <div class="estimate-header">
+                    <span class="eyebrow">Live estimate</span>
+                    <h2 data-estimate-title></h2>
+                    <p data-estimate-subtitle></p>
+                  </div>
+                  <div class="estimate-breakdown">
+                    <div class="estimate-row">
+                      <span>Equipment allowance</span>
+                      <strong data-equipment-range></strong>
+                    </div>
+                    <div class="estimate-row">
+                      <span>Labour allowance</span>
+                      <strong data-labour-range></strong>
+                    </div>
+                    <div class="estimate-row">
+                      <span>Material allowance</span>
+                      <strong data-material-range></strong>
+                    </div>
+                    <div class="estimate-row">
+                      <span>Subtotal estimate</span>
+                      <strong data-subtotal-range></strong>
+                    </div>
+                    <div class="estimate-row">
+                      <span>GST (5%)</span>
+                      <strong data-gst-range></strong>
+                    </div>
+                  </div>
+                  <div class="estimate-total">
+                    <p>Final estimated range</p>
+                    <strong data-total-range></strong>
+                  </div>
+                  <div class="estimate-notes">
+                    <p class="detail-label">Estimate assumptions</p>
+                    <ul class="check-list" data-assumptions-list></ul>
+                  </div>
+                </aside>
+              </div>
+            </form>
+          </div>
+        </section>
+      </main>
+      <footer data-site-footer></footer>
+    </div>
+    <script type="module" src="/src/quote.js"></script>
+  </body>
+</html>
