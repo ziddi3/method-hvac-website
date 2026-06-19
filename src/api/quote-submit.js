@@ -88,18 +88,34 @@ export async function handleQuoteSubmit(rawBody) {
       typeof process === "undefined";
 
     if (isDev) {
-      const saved = await saveQuoteLocally({ payload, summaryNote, tags });
-      return {
-        status: 202,
-        body: {
-          ok: true,
-          code: "CRM_NOT_CONFIGURED_DEV_FALLBACK",
-          message:
-            "CRM not configured. Quote saved locally for development review.",
-          missingEnv: missing,
-          savedTo: saved.relativePath,
-        },
-      };
+      try {
+        const saved = await saveQuoteLocally({ payload, summaryNote, tags });
+        return {
+          status: 202,
+          body: {
+            ok: true,
+            code: "CRM_NOT_CONFIGURED_DEV_FALLBACK",
+            message:
+              "CRM not configured. Quote saved locally for development review.",
+            missingEnv: missing,
+            savedTo: saved.relativePath,
+          },
+        };
+      } catch (err) {
+        // Filesystem write failed (permissions, disk full, read-only fs, ...).
+        // Log server-side detail but keep client response generic.
+        console.error("[quote-submit] local save failed:", err && err.message);
+        return {
+          status: 500,
+          body: {
+            ok: false,
+            code: "LOCAL_SAVE_FAILED",
+            message:
+              "CRM not configured and the local dev fallback could not save the submission.",
+            missingEnv: missing,
+          },
+        };
+      }
     }
 
     return {
@@ -128,16 +144,22 @@ export async function handleQuoteSubmit(rawBody) {
       },
     };
   } catch (err) {
-    // Don't leak request bodies, auth headers, or stack traces to the client.
-    const status = (err && err.status) || 502;
+    // Log full server-side context, but never echo upstream status codes
+    // or error bodies to the client: a GHL 401/403 must not turn into a
+    // 401/403 from *our* endpoint (the user is not the one unauthorized),
+    // and upstream messages can contain backend identifiers.
+    console.error(
+      "[quote-submit] CRM submission failed:",
+      (err && err.status) || "?",
+      (err && err.message) || err,
+    );
     return {
-      status,
+      status: 502,
       body: {
         ok: false,
         code: "CRM_SUBMISSION_FAILED",
         message:
-          (err && err.message) ||
-          "Failed to submit quote to CRM. Please try again.",
+          "Failed to submit quote to CRM. Please try again or contact us directly.",
       },
     };
   }
@@ -202,15 +224,44 @@ export default async function quoteSubmitHandler(req, res) {
     return;
   }
 
-  let body = req.body;
-  if (body === undefined) {
-    body = await readJsonBody(req);
-  }
+  try {
+    let body = req.body;
+    if (body === undefined) {
+      body = await readJsonBody(req);
+    }
 
-  const { status, body: responseBody } = await handleQuoteSubmit(body);
-  res.statusCode = status;
-  res.setHeader("Content-Type", "application/json");
-  res.end(JSON.stringify(responseBody));
+    const { status, body: responseBody } = await handleQuoteSubmit(body);
+    res.statusCode = status;
+    res.setHeader("Content-Type", "application/json");
+    res.end(JSON.stringify(responseBody));
+  } catch (err) {
+    // Covers: readJsonBody rejections (e.g. 413 over-size, request errors)
+    // and any unexpected throw from handleQuoteSubmit. Without this,
+    // the rejection would escape as an unhandled promise rejection and
+    // the client connection would hang.
+    const status = (err && err.status) || 500;
+    console.error(
+      "[quote-submit] handler error:",
+      status,
+      (err && err.message) || err,
+    );
+    if (!res.headersSent) {
+      res.statusCode = status;
+      res.setHeader("Content-Type", "application/json");
+      res.end(
+        JSON.stringify({
+          ok: false,
+          code: status === 413 ? "PAYLOAD_TOO_LARGE" : "INTERNAL_ERROR",
+          message:
+            status === 413
+              ? "Quote submission is too large."
+              : "Quote submission could not be processed.",
+        }),
+      );
+    } else {
+      res.end();
+    }
+  }
 }
 
 /**

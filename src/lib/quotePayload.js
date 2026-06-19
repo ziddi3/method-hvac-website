@@ -76,6 +76,36 @@ function splitName(fullName) {
 }
 
 /**
+ * Cheap email shape check that avoids backtracking-prone regexes.
+ *
+ * Rules: exactly one "@", both sides non-empty and shorter than 254
+ * chars total, the right side contains a "." with non-empty labels,
+ * and there is no whitespace anywhere. Deliberately not an RFC 5322
+ * validator — we only need to catch obvious typos before sending the
+ * address to GoHighLevel.
+ *
+ * @param {string} value
+ * @returns {boolean}
+ */
+function isEmailShape(value) {
+  const s = typeof value === "string" ? value : "";
+  if (!s || s.length > 254) return false;
+  if (/\s/.test(s)) return false;
+  const atIdx = s.indexOf("@");
+  if (atIdx <= 0 || atIdx !== s.lastIndexOf("@")) return false;
+  const local = s.slice(0, atIdx);
+  const domain = s.slice(atIdx + 1);
+  if (!local || !domain) return false;
+  const dotIdx = domain.lastIndexOf(".");
+  if (dotIdx <= 0 || dotIdx === domain.length - 1) return false;
+  // Each domain label must be non-empty.
+  for (const label of domain.split(".")) {
+    if (!label) return false;
+  }
+  return true;
+}
+
+/**
  * Build the canonical quote payload from raw frontend input.
  *
  * The returned object is safe to log (no secrets) and is what the rest
@@ -139,8 +169,7 @@ export function validateQuotePayload(payload) {
     errors.push("Customer email or phone is required.");
   }
   if (customer && customer.email) {
-    // Minimal email shape check; intentionally not a full RFC validator.
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customer.email)) {
+    if (!isEmailShape(customer.email)) {
       errors.push("Customer email is not a valid email address.");
     }
   }
@@ -216,4 +245,5 @@ export const __testables = {
   asNumber,
   asStringArray,
   splitName,
+  isEmailShape,
 };
