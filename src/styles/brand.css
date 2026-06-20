@@ -1,0 +1,71 @@
+:root {
+  --method-bg: #05070b;
+  --method-surface: #0c1320;
+  --method-steel: #aeb8c4;
+  --method-silver: #d8dee7;
+  --method-blue: #0878d1;
+  --method-flame-blue: #00a7ff;
+  --method-flame-orange: #ff6a1a;
+  --method-gold: #b68a36;
+  --method-text: #f4f7fb;
+  --method-muted: #a3afbf;
+}
+
+.brand-asset {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  object-fit: contain;
+  object-position: center;
+  background: transparent;
+}
+
+.brand-logo--primary {
+  width: clamp(11rem, 28vw, 25rem);
+}
+
+.brand-tagline {
+  width: clamp(15rem, 48vw, 43rem);
+}
+
+.brand-seal--alliance {
+  width: clamp(7.5rem, 18vw, 14rem);
+}
+
+.brand-badge--hvac-bob {
+  width: clamp(6.5rem, 16vw, 12rem);
+}
+
+.brand-credit--method-media {
+  width: clamp(5.5rem, 12vw, 9rem);
+  opacity: 0.72;
+}
+
+.brand-on-dark {
+  background:
+    radial-gradient(circle at 15% 0%, rgba(0, 167, 255, 0.14), transparent 38%),
+    linear-gradient(145deg, var(--method-surface), var(--method-bg));
+  color: var(--method-text);
+}
+
+.brand-trust-accent {
+  border: 1px solid color-mix(in srgb, var(--method-gold) 42%, transparent);
+  box-shadow: 0 16px 42px rgba(0, 0, 0, 0.32);
+}
+
+@media (max-width: 720px) {
+  .brand-logo--primary,
+  .brand-tagline,
+  .brand-seal--alliance,
+  .brand-badge--hvac-bob,
+  .brand-credit--method-media {
+    margin-inline: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .brand-asset {
+    animation: none !important;
+    transition: none !important;
+  }
+}
