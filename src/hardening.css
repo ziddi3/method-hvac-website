@@ -1,0 +1,4 @@
+.option-card:focus-within .option-card-content {
+  outline: 3px solid #9fc4dc;
+  outline-offset: 2px;
+}
