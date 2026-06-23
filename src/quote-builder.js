@@ -2,10 +2,7 @@ import {
   calculateQuote,
   createLeadPayload,
   formatRange,
-  getQuoteMetadata,
 } from './quote-calculations.js'
-
-const { services, packageTiers, homeSizes } = getQuoteMetadata()
 
 function getSelections(form) {
   const data = new FormData(form)
@@ -33,7 +30,13 @@ function fillList(listElement, items) {
     return
   }
 
-  listElement.innerHTML = items.map((item) => `<li>${item}</li>`).join('')
+  listElement.replaceChildren(
+    ...items.map((item) => {
+      const listItem = document.createElement('li')
+      listItem.textContent = item
+      return listItem
+    }),
+  )
 }
 
 function updateEstimate(form, estimate) {
@@ -66,7 +69,7 @@ function updateEstimate(form, estimate) {
   fillList(
     document.querySelector('[data-assumptions-list]'),
     estimate.assumptions.concat(
-      `${services[selections.service].label} pricing is based on a ${packageTiers[selections.packageTier].label.toLowerCase()} package for ${homeSizes[selections.homeSize].label.toLowerCase()}.`,
+      `${estimate.serviceLabel} pricing is based on a ${estimate.packageLabel.toLowerCase()} package for ${estimate.homeSizeLabel.toLowerCase()}.`,
     ),
   )
 
@@ -131,7 +134,6 @@ export function initializeQuoteBuilder() {
   })
 
   form.addEventListener('input', syncEstimate)
-  form.addEventListener('change', syncEstimate)
 
   form.addEventListener('submit', (event) => {
     event.preventDefault()
