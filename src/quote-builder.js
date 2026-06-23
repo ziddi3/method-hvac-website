@@ -106,6 +106,8 @@ export function initializeQuoteBuilder() {
     return
   }
 
+  form.method = 'post'
+
   const stepPanels = [...form.querySelectorAll('[data-step-panel]')]
   const stepPills = [...form.querySelectorAll('[data-step-pill]')]
   const status = form.querySelector('[data-quote-status]')
