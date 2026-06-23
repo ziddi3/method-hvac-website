@@ -93,6 +93,10 @@ function roundToNearestFifty(amount) {
   return Math.round(amount / 50) * 50
 }
 
+function roundToCurrency(amount) {
+  return Math.round(amount)
+}
+
 function createRange(baseAmount, spreadRate) {
   const low = roundToNearestFifty(baseAmount * (1 - spreadRate))
   const high = roundToNearestFifty(baseAmount * (1 + spreadRate))
@@ -109,10 +113,10 @@ function addRanges(...ranges) {
   )
 }
 
-function multiplyRange(range, factor) {
+function calculateTaxRange(range, rate) {
   return {
-    low: roundToNearestFifty(range.low * factor),
-    high: roundToNearestFifty(range.high * factor),
+    low: roundToCurrency(range.low * rate),
+    high: roundToCurrency(range.high * rate),
   }
 }
 
@@ -145,7 +149,7 @@ export function calculateQuote({ service = 'ac-install', packageTier = 'standard
   const labourRange = createRange(scaledLabour, serviceConfig.spreadRate)
   const materialRange = createRange(scaledMaterials, serviceConfig.spreadRate * 1.1)
   const subtotalRange = addRanges(equipmentRange, labourRange, materialRange)
-  const gstRange = multiplyRange(subtotalRange, 0.05)
+  const gstRange = calculateTaxRange(subtotalRange, 0.05)
   const totalRange = addRanges(subtotalRange, gstRange)
 
   return {
