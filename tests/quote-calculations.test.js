@@ -26,6 +26,18 @@ test('calculateQuote returns transparent installation ranges with GST added', ()
   )
 })
 
+test('low-cost maintenance estimates still include GST', () => {
+  const estimate = calculateQuote({
+    service: 'maintenance',
+    packageTier: 'budget',
+    homeSize: 'compact',
+  })
+
+  assert.deepEqual(estimate.subtotalRange, { low: 200, high: 250 })
+  assert.deepEqual(estimate.gstRange, { low: 10, high: 13 })
+  assert.deepEqual(estimate.totalRange, { low: 210, high: 263 })
+})
+
 test('repair estimates can legitimately have no equipment allowance', () => {
   const estimate = calculateQuote({
     service: 'service-repair',
