@@ -137,7 +137,7 @@ export function initializeQuoteBuilder() {
 
   form.addEventListener('input', syncEstimate)
 
-  form.addEventListener('submit', (event) => {
+  form.addEventListener('submit', async (event) => {
     event.preventDefault()
 
     if (!form.reportValidity()) {
@@ -147,9 +147,49 @@ export function initializeQuoteBuilder() {
     const estimate = syncEstimate()
     const contact = getContactDetails(form)
     const firstName = contact.name.split(' ')[0] || 'there'
+    const payloadField = form.querySelector('[name="leadPayload"]')
 
     if (status) {
-      status.textContent = `Thanks ${firstName} — your ${estimate.serviceLabel.toLowerCase()} estimate request is ready for follow-up. We’ll confirm scope, site conditions, and next steps with you shortly.`
+      status.textContent = 'Sending your estimate request...'
+    }
+
+    try {
+      const payload = payloadField?.value ? JSON.parse(payloadField.value) : {}
+
+      const response = await fetch('https://crm.methodz.ca/api/webhooks/lead', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-methodz-crm-secret': import.meta.env.VITE_METHODZ_CRM_WEBHOOK_SECRET ?? '',
+        },
+        body: JSON.stringify({
+          brand: 'method_hvac',
+          source: 'method_hvac_website',
+          serviceType: payload?.selections?.service ?? 'hvac_quote_request',
+          contact,
+          estimate,
+          payload,
+          pageUrl: window.location.href,
+          submittedAt: new Date().toISOString(),
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error(`CRM webhook failed with ${response.status}`)
+      }
+
+      if (status) {
+        status.textContent = `Thanks ${firstName} — your ${estimate.serviceLabel.toLowerCase()} estimate request was sent. We’ll confirm scope, site conditions, and next steps with you shortly.`
+      }
+
+      form.reset()
+      syncEstimate()
+    } catch (error) {
+      console.error(error)
+
+      if (status) {
+        status.textContent = 'Your estimate was calculated, but the CRM connection failed. Please call or email Method HVAC directly.'
+      }
     }
   })
 
