@@ -156,11 +156,10 @@ export function initializeQuoteBuilder() {
     try {
       const payload = payloadField?.value ? JSON.parse(payloadField.value) : {}
 
-      const response = await fetch('https://crm.methodz.ca/api/webhooks/lead', {
+      const response = await fetch('/api/lead', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-methodz-crm-secret': import.meta.env.VITE_METHODZ_CRM_WEBHOOK_SECRET ?? '',
         },
         body: JSON.stringify({
           brand: 'method_hvac',
