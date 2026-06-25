@@ -35,7 +35,7 @@ export function initializeSite(pageKey) {
           <nav class="site-nav" aria-label="Primary">
             ${renderNavigation(pageKey)}
           </nav>
-          <a class="hub-link" href="/index.html">Return to Method Hub</a>
+          <a class="hub-link" href="https://hub.methodz.ca">Return to Method Hub</a>
         </div>
       </div>
     `
@@ -60,7 +60,7 @@ export function initializeSite(pageKey) {
         </div>
         <div>
           <p class="footer-heading">Method Hub</p>
-          <a class="hub-link footer-hub-link" href="/index.html">Return to Method Hub</a>
+          <a class="hub-link footer-hub-link" href="https://hub.methodz.ca">Return to Method Hub</a>
           <p class="footer-copy">Prepared for future GoHighLevel lead capture integration.</p>
         </div>
       </div>
