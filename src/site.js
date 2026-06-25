@@ -50,8 +50,8 @@ export function initializeSite(pageKey) {
         </div>
         <div>
           <p class="footer-heading">Contact</p>
-          <p><a class="text-link-inline" href="tel:14035550198">403-555-0198</a></p>
-          <p><a class="text-link-inline" href="mailto:hello@methodhvac.ca">hello@methodhvac.ca</a></p>
+          <p><a class="text-link-inline" href="tel:13683374085">3683374085</a></p>
+          <p><a class="text-link-inline" href="mailto:franco@method-hvac.ca">franco@method-hvac.ca</a></p>
           <p>${serviceAreas}</p>
         </div>
         <div>
@@ -97,7 +97,7 @@ function initializeContactForms() {
       const firstName = details.get('name')?.toString().trim().split(' ')[0] ?? 'there'
 
       if (status) {
-        status.textContent = `Thanks ${firstName} — your request is ready for our coordinator. While full GoHighLevel syncing is still being connected, you can also call 403-555-0198 for immediate scheduling.`
+        status.textContent = `Thanks ${firstName} — your request is ready for our coordinator. While full GoHighLevel syncing is still being connected, you can also call 3683374085 for immediate scheduling.`
       }
     })
   })
