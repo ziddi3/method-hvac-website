@@ -51,7 +51,7 @@ test('repair estimates can legitimately have no equipment allowance', () => {
   assert.ok(estimate.materialRange.low > 0)
 })
 
-test('createLeadPayload stores a GoHighLevel-ready quote structure', () => {
+test('createLeadPayload stores a CRM-ready quote structure', () => {
   const selections = {
     service: 'maintenance',
     packageTier: 'premium',
@@ -66,6 +66,9 @@ test('createLeadPayload stores a GoHighLevel-ready quote structure', () => {
         email: 'alex@example.com',
         phone: '403-555-0100',
         postalCode: 'T2X 1A1',
+        address: 'Mahogany, Calgary',
+        preferredContact: 'Text message',
+        urgency: 'Flexible planning',
         timeline: 'Within 30 days',
         notes: 'Spring maintenance visit requested.',
       },
@@ -75,7 +78,37 @@ test('createLeadPayload stores a GoHighLevel-ready quote structure', () => {
 
   assert.equal(payload.integrationTarget, 'GoHighLevel')
   assert.equal(payload.integrationStatus, 'ready-for-api-connection')
+  assert.equal(payload.crm.pipeline, 'Method HVAC Home Comfort Pipeline')
+  assert.equal(payload.crm.stage, 'new_quote_request')
+  assert.ok(payload.crm.score >= 0 && payload.crm.score <= 100)
+  assert.ok(payload.crm.tags.includes('maintenance'))
   assert.equal(payload.quote.serviceLabel, 'Maintenance')
   assert.deepEqual(payload.quote.totalEstimate, estimate.totalRange)
-  assert.equal(payload.contact.name, 'Alex Method')
+  assert.equal(payload.contact.preferredContact, 'Text message')
+})
+
+test('emergency repair leads are routed as urgent CRM work', () => {
+  const selections = {
+    service: 'service-repair',
+    packageTier: 'standard',
+    homeSize: 'family',
+  }
+  const estimate = calculateQuote(selections)
+  const payload = createLeadPayload(
+    {
+      selections,
+      contact: {
+        name: 'Morgan Heat',
+        email: 'morgan@example.com',
+        phone: '403-555-0111',
+        urgency: 'Emergency / no heat or cooling',
+        timeline: 'As soon as possible',
+      },
+    },
+    estimate,
+  )
+
+  assert.equal(payload.crm.priority, 'urgent')
+  assert.equal(payload.crm.priorityLabel, 'Urgent dispatch review')
+  assert.ok(payload.crm.nextActions.some((action) => action.includes('equipment age')))
 })
