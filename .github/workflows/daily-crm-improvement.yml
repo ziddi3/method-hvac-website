@@ -1,0 +1,70 @@
+name: Daily CRM workflow improvement sweep
+
+on:
+  schedule:
+    # Runs daily at 14:15 UTC, roughly morning in Alberta.
+    - cron: '15 14 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  open-daily-sweep:
+    name: Open daily Method HVAC improvement issue
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create daily CRM/workflow/UI issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const today = new Date().toISOString().slice(0, 10);
+            const labels = [
+              { name: 'daily-improvement', color: '0f5e8f', description: 'Daily Method HVAC improvement sweep' },
+              { name: 'crm', color: '117a53', description: 'CRM and lead routing work' },
+              { name: 'workflow', color: 'f59e0b', description: 'Customer or operations workflow' },
+              { name: 'ui-polish', color: 'dff0fb', description: 'Appearance, accessibility, and conversion polish' },
+            ];
+
+            for (const label of labels) {
+              try {
+                await github.rest.issues.createLabel({ owner, repo, ...label });
+              } catch (error) {
+                if (error.status !== 422) throw error;
+              }
+            }
+
+            const title = `Daily Method HVAC CRM/workflow/UI sweep - ${today}`;
+            const body = `## Daily improvement focus
+
+Review the Method HVAC repository and ship one small improvement today.
+
+### Required checks
+- [ ] CRM lead payload still includes priority, score, SLA, tags, custom fields, and coordinator next actions.
+- [ ] Quote workflow still feels clear on desktop and mobile.
+- [ ] Customer-facing copy reduces friction and explains next steps.
+- [ ] Styling, spacing, and accessibility are cleaner than yesterday.
+- [ ] Any change is documented or covered by a focused test when practical.
+
+### Suggested targets
+1. Improve GoHighLevel/custom CRM field mapping.
+2. Tighten quote-builder form wording or validation.
+3. Improve the Method workflow page visuals.
+4. Add a small test for CRM routing behavior.
+5. Review webhook error states and customer fallback messaging.
+
+### Definition of done
+- [ ] One commit, pull request, or follow-up issue exists for the improvement.
+- [ ] The change supports CRM build-out, workflow clarity, or appearance polish.
+`;
+
+            await github.rest.issues.create({
+              owner,
+              repo,
+              title,
+              body,
+              labels: labels.map((label) => label.name),
+            });
