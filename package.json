@@ -7,7 +7,9 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "node --test"
+    "test": "node --test",
+    "lint": "node --check src/site.js && node --check src/quote-builder.js && node --check src/quote-calculations.js && node --check api/lead.js",
+    "typecheck": "npm run build"
   },
   "devDependencies": {
     "vite": "^8.0.16"

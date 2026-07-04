@@ -50,6 +50,39 @@ function setText(selector, value) {
   }
 }
 
+function updateFormStatus(status, message, statusType = 'info') {
+  if (!status) {
+    return
+  }
+
+  status.dataset.status = statusType
+  status.textContent = message
+}
+
+function clearFormStatus(status) {
+  if (!status) {
+    return
+  }
+
+  delete status.dataset.status
+  status.textContent = ''
+}
+
+function setSubmitState(form, isSubmitting) {
+  const submitButton = form.querySelector('[type="submit"]')
+
+  if (!submitButton) {
+    return
+  }
+
+  if (!submitButton.dataset.defaultLabel) {
+    submitButton.dataset.defaultLabel = submitButton.textContent.trim()
+  }
+
+  submitButton.disabled = isSubmitting
+  submitButton.textContent = isSubmitting ? 'Sending request...' : submitButton.dataset.defaultLabel
+}
+
 function updateEstimate(form, estimate) {
   const selections = getSelections(form)
   const payloadField = form.querySelector('[name="leadPayload"]')
@@ -144,7 +177,13 @@ export function initializeQuoteBuilder() {
     })
   })
 
-  form.addEventListener('input', syncEstimate)
+  form.addEventListener('input', () => {
+    if (status?.dataset.status === 'success' || status?.dataset.status === 'error') {
+      clearFormStatus(status)
+    }
+
+    syncEstimate()
+  })
 
   form.addEventListener('submit', async (event) => {
     event.preventDefault()
@@ -158,9 +197,8 @@ export function initializeQuoteBuilder() {
     const firstName = contact.name.split(' ')[0] || 'there'
     const payloadField = form.querySelector('[name="leadPayload"]')
 
-    if (status) {
-      status.textContent = 'Sending your estimate request into the Method HVAC CRM workflow...'
-    }
+    updateFormStatus(status, 'Sending your estimate request into the Method HVAC CRM workflow...', 'info')
+    setSubmitState(form, true)
 
     try {
       const payload = payloadField?.value ? JSON.parse(payloadField.value) : {}
@@ -190,18 +228,21 @@ export function initializeQuoteBuilder() {
         throw new Error(result.error ?? `CRM webhook failed with ${response.status}`)
       }
 
-      if (status) {
-        status.textContent = `Thanks ${firstName} — your ${estimate.serviceLabel.toLowerCase()} request is queued as ${payload.crm.priorityLabel.toLowerCase()}. Method HVAC will follow up based on the ${payload.crm.sla.toLowerCase()}`
-      }
-
-      form.reset()
-      syncEstimate()
+      updateFormStatus(
+        status,
+        `Thanks ${firstName} — your ${estimate.serviceLabel.toLowerCase()} request is queued as ${payload.crm.priorityLabel.toLowerCase()}. Method HVAC will follow up based on the ${payload.crm.sla.toLowerCase()}`,
+        'success',
+      )
     } catch (error) {
       console.error(error)
 
-      if (status) {
-        status.textContent = 'Your estimate was calculated, but the CRM connection failed. Please call or email Method HVAC directly so the request is not missed.'
-      }
+      updateFormStatus(
+        status,
+        'Your estimate was calculated, but the CRM connection failed. Please call or email Method HVAC directly so the request is not missed.',
+        'error',
+      )
+    } finally {
+      setSubmitState(form, false)
     }
   })
 
