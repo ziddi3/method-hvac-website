@@ -1,0 +1,200 @@
+.hero-copy,
+.callout-card,
+.form-card,
+.estimate-card,
+.content-card,
+.stack-item,
+.testimonial-card,
+.review-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-copy::after,
+.callout-card::after,
+.estimate-card::after {
+  content: '';
+  position: absolute;
+  inset: auto -20% -45% 20%;
+  height: 180px;
+  background: radial-gradient(circle, rgba(245, 158, 11, 0.16), transparent 62%);
+  pointer-events: none;
+}
+
+.pipeline-grid,
+.crm-dashboard,
+.crm-field-grid,
+.workflow-timeline,
+.quote-support-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.pipeline-grid {
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+}
+
+.pipeline-card,
+.crm-dashboard-card,
+.crm-snapshot-card,
+.workflow-card,
+.quote-support-card {
+  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.pipeline-card,
+.crm-dashboard-card,
+.workflow-card,
+.quote-support-card {
+  padding: 1.35rem;
+}
+
+.pipeline-card {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.pipeline-index,
+.status-badge,
+.crm-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.pipeline-index {
+  min-width: 2.25rem;
+  min-height: 2.25rem;
+  color: #ffffff;
+  background: linear-gradient(135deg, var(--brand), var(--brand-deep));
+}
+
+.status-badge,
+.crm-chip {
+  padding: 0.45rem 0.75rem;
+  color: var(--brand-deep);
+  background: var(--brand-soft);
+}
+
+.crm-dashboard {
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.crm-dashboard-card {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.crm-dashboard-card strong {
+  color: var(--heading);
+  font-size: clamp(1.6rem, 4vw, 2.6rem);
+  line-height: 1;
+}
+
+.crm-field-grid {
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.crm-field {
+  padding: 1rem;
+  border: 1px dashed rgba(15, 94, 143, 0.32);
+  border-radius: var(--radius-sm);
+  background: rgba(223, 240, 251, 0.38);
+}
+
+.crm-field strong {
+  display: block;
+  color: var(--heading);
+  margin-bottom: 0.25rem;
+}
+
+.workflow-timeline {
+  counter-reset: workflow;
+}
+
+.workflow-card {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 1rem;
+  align-items: start;
+}
+
+.workflow-card::before {
+  counter-increment: workflow;
+  content: counter(workflow);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 999px;
+  color: #ffffff;
+  background: var(--brand-deep);
+  font-weight: 800;
+}
+
+.quote-support-grid {
+  margin-top: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.quote-support-card {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.crm-snapshot-card {
+  display: grid;
+  gap: 0.85rem;
+  padding: 1.25rem;
+  background: linear-gradient(145deg, rgba(223, 240, 251, 0.78), rgba(255, 255, 255, 0.92));
+}
+
+.crm-snapshot-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.7rem 0;
+  border-top: 1px solid rgba(15, 94, 143, 0.14);
+}
+
+.crm-snapshot-row strong {
+  color: var(--heading);
+  text-align: right;
+}
+
+.crm-next-actions {
+  margin-top: 0;
+}
+
+.workflow-cta {
+  display: flex;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+  margin-top: 1.5rem;
+}
+
+@media (min-width: 900px) {
+  .workflow-timeline {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 767px) {
+  .crm-snapshot-row {
+    flex-direction: column;
+  }
+
+  .crm-snapshot-row strong {
+    text-align: left;
+  }
+}

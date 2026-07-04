@@ -20,6 +20,9 @@ function getContactDetails(form) {
     email: data.get('email')?.toString().trim() ?? '',
     phone: data.get('phone')?.toString().trim() ?? '',
     postalCode: data.get('postalCode')?.toString().trim() ?? '',
+    address: data.get('address')?.toString().trim() ?? '',
+    preferredContact: data.get('preferredContact')?.toString().trim() ?? 'Phone call',
+    urgency: data.get('urgency')?.toString().trim() ?? 'Need help this week',
     timeline: data.get('timeline')?.toString().trim() ?? '',
     notes: data.get('notes')?.toString().trim() ?? '',
   }
@@ -39,9 +42,24 @@ function fillList(listElement, items) {
   )
 }
 
+function setText(selector, value) {
+  const element = document.querySelector(selector)
+
+  if (element) {
+    element.textContent = value
+  }
+}
+
 function updateEstimate(form, estimate) {
   const selections = getSelections(form)
   const payloadField = form.querySelector('[name="leadPayload"]')
+  const payload = createLeadPayload(
+    {
+      selections,
+      contact: getContactDetails(form),
+    },
+    estimate,
+  )
 
   const textFields = [
     ['[data-estimate-title]', `${estimate.serviceLabel} — ${estimate.packageLabel}`],
@@ -58,13 +76,12 @@ function updateEstimate(form, estimate) {
     ['[data-total-range]', formatRange(estimate.totalRange)],
   ]
 
-  textFields.forEach(([selector, value]) => {
-    const element = document.querySelector(selector)
+  textFields.forEach(([selector, value]) => setText(selector, value))
 
-    if (element) {
-      element.textContent = value
-    }
-  })
+  setText('[data-crm-priority]', payload.crm.priorityLabel)
+  setText('[data-crm-score]', `${payload.crm.score}/100`)
+  setText('[data-crm-sla]', payload.crm.sla)
+  setText('[data-crm-next-action]', payload.crm.nextAction)
 
   fillList(
     document.querySelector('[data-assumptions-list]'),
@@ -73,18 +90,10 @@ function updateEstimate(form, estimate) {
     ),
   )
 
+  fillList(document.querySelector('[data-crm-next-actions]'), payload.crm.nextActions)
+
   if (payloadField) {
-    payloadField.value = JSON.stringify(
-      createLeadPayload(
-        {
-          selections,
-          contact: getContactDetails(form),
-        },
-        estimate,
-      ),
-      null,
-      2,
-    )
+    payloadField.value = JSON.stringify(payload, null, 2)
   }
 }
 
@@ -150,7 +159,7 @@ export function initializeQuoteBuilder() {
     const payloadField = form.querySelector('[name="leadPayload"]')
 
     if (status) {
-      status.textContent = 'Sending your estimate request...'
+      status.textContent = 'Sending your estimate request into the Method HVAC CRM workflow...'
     }
 
     try {
@@ -164,21 +173,25 @@ export function initializeQuoteBuilder() {
         body: JSON.stringify({
           brand: 'method_hvac',
           source: 'method_hvac_website',
-          serviceType: payload?.selections?.service ?? 'hvac_quote_request',
+          serviceType: payload?.quote?.service ?? 'hvac_quote_request',
           contact,
           estimate,
+          crm: payload.crm,
+          workflow: payload.workflow,
           payload,
           pageUrl: window.location.href,
           submittedAt: new Date().toISOString(),
         }),
       })
 
+      const result = await response.json().catch(() => ({}))
+
       if (!response.ok) {
-        throw new Error(`CRM webhook failed with ${response.status}`)
+        throw new Error(result.error ?? `CRM webhook failed with ${response.status}`)
       }
 
       if (status) {
-        status.textContent = `Thanks ${firstName} — your ${estimate.serviceLabel.toLowerCase()} estimate request was sent. We’ll confirm scope, site conditions, and next steps with you shortly.`
+        status.textContent = `Thanks ${firstName} — your ${estimate.serviceLabel.toLowerCase()} request is queued as ${payload.crm.priorityLabel.toLowerCase()}. Method HVAC will follow up based on the ${payload.crm.sla.toLowerCase()}`
       }
 
       form.reset()
@@ -187,7 +200,7 @@ export function initializeQuoteBuilder() {
       console.error(error)
 
       if (status) {
-        status.textContent = 'Your estimate was calculated, but the CRM connection failed. Please call or email Method HVAC directly.'
+        status.textContent = 'Your estimate was calculated, but the CRM connection failed. Please call or email Method HVAC directly so the request is not missed.'
       }
     }
   })

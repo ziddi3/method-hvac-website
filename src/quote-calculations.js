@@ -89,6 +89,36 @@ const services = {
   },
 }
 
+const priorityProfiles = {
+  urgent: {
+    label: 'Urgent dispatch review',
+    sla: 'Call or text within 15 minutes during service hours.',
+    nextAction: 'Confirm safety, equipment status, and fastest available diagnostic window.',
+  },
+  high: {
+    label: 'High-priority sales follow-up',
+    sla: 'Call within 2 business hours.',
+    nextAction: 'Confirm scope, access, comfort goals, and appointment availability.',
+  },
+  standard: {
+    label: 'Standard quote follow-up',
+    sla: 'Reply by the next business day.',
+    nextAction: 'Validate estimate assumptions and offer the next practical booking window.',
+  },
+  nurture: {
+    label: 'Planning nurture',
+    sla: 'Send planning reply within 2 business days.',
+    nextAction: 'Share comparison guidance, maintenance options, or seasonal planning notes.',
+  },
+}
+
+const serviceTags = {
+  'ac-install': 'ac-installation',
+  'furnace-install': 'furnace-installation',
+  'service-repair': 'repair-diagnostics',
+  maintenance: 'maintenance',
+}
+
 function roundToNearestFifty(amount) {
   return Math.round(amount / 50) * 50
 }
@@ -120,11 +150,128 @@ function calculateTaxRange(range, rate) {
   }
 }
 
+function cleanText(value) {
+  return value?.toString().trim() ?? ''
+}
+
+function slugify(value) {
+  return cleanText(value)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
+}
+
+function normalizeContact(contact = {}) {
+  return {
+    name: cleanText(contact.name),
+    email: cleanText(contact.email),
+    phone: cleanText(contact.phone),
+    postalCode: cleanText(contact.postalCode).toUpperCase(),
+    address: cleanText(contact.address),
+    preferredContact: cleanText(contact.preferredContact) || 'Phone call',
+    urgency: cleanText(contact.urgency) || 'Need help this week',
+    timeline: cleanText(contact.timeline) || 'As soon as possible',
+    notes: cleanText(contact.notes),
+  }
+}
+
+function calculateLeadScore(contact, estimate) {
+  const urgency = contact.urgency.toLowerCase()
+  const timeline = contact.timeline.toLowerCase()
+  let score = 50
+
+  if (urgency.includes('emergency') || urgency.includes('no heat') || urgency.includes('no cooling')) {
+    score += 30
+  } else if (urgency.includes('week')) {
+    score += 15
+  } else if (urgency.includes('planning')) {
+    score -= 8
+  }
+
+  if (timeline.includes('soon')) {
+    score += 15
+  } else if (timeline.includes('2 weeks')) {
+    score += 10
+  } else if (timeline.includes('planning')) {
+    score -= 5
+  }
+
+  if (estimate.service === 'service-repair') {
+    score += 10
+  }
+
+  if (estimate.service === 'ac-install' || estimate.service === 'furnace-install') {
+    score += 8
+  }
+
+  if (estimate.packageTier === 'premium') {
+    score += 8
+  }
+
+  if (contact.postalCode) {
+    score += 5
+  }
+
+  return Math.max(0, Math.min(100, score))
+}
+
+function determinePriority(score, contact) {
+  const urgency = contact.urgency.toLowerCase()
+
+  if (urgency.includes('emergency') || urgency.includes('no heat') || urgency.includes('no cooling')) {
+    return 'urgent'
+  }
+
+  if (score >= 82) {
+    return 'high'
+  }
+
+  if (score >= 58) {
+    return 'standard'
+  }
+
+  return 'nurture'
+}
+
+function createLeadTags({ selections, contact, priority }) {
+  return [
+    'method-hvac',
+    'quote-builder',
+    serviceTags[selections.service] ?? 'hvac-lead',
+    `package-${slugify(selections.packageTier)}`,
+    `home-${slugify(selections.homeSize)}`,
+    `priority-${priority}`,
+    contact.postalCode ? `postal-${slugify(contact.postalCode)}` : '',
+    contact.preferredContact ? `contact-${slugify(contact.preferredContact)}` : '',
+  ].filter(Boolean)
+}
+
+function createNextActions(priority, estimate, contact) {
+  const actions = [priorityProfiles[priority].nextAction]
+
+  if (estimate.service === 'service-repair') {
+    actions.push('Ask for equipment age, error codes, photos, and whether heat/cooling is fully down.')
+  }
+
+  if (estimate.service === 'ac-install' || estimate.service === 'furnace-install') {
+    actions.push('Confirm home access, current equipment size, panel/venting notes, and preferred install timing.')
+  }
+
+  if (contact.notes) {
+    actions.push('Review customer notes before first contact so the coordinator reply is specific.')
+  }
+
+  actions.push('Log outcome in CRM, assign owner, and schedule the next follow-up before closing the task.')
+
+  return actions
+}
+
 export function getQuoteMetadata() {
   return {
     homeSizes,
     packageTiers,
     services,
+    priorityProfiles,
   }
 }
 
@@ -171,26 +318,76 @@ export function calculateQuote({ service = 'ac-install', packageTier = 'standard
   }
 }
 
-export function createLeadPayload({ selections, contact }, estimate) {
+export function createLeadPayload({ selections = {}, contact = {} } = {}, estimate) {
+  const normalizedSelections = {
+    service: selections.service ?? 'ac-install',
+    packageTier: selections.packageTier ?? 'standard',
+    homeSize: selections.homeSize ?? 'family',
+  }
+  const normalizedEstimate = estimate ?? calculateQuote(normalizedSelections)
+  const normalizedContact = normalizeContact(contact)
+  const score = calculateLeadScore(normalizedContact, normalizedEstimate)
+  const priority = determinePriority(score, normalizedContact)
+  const priorityProfile = priorityProfiles[priority]
+  const tags = createLeadTags({
+    selections: normalizedSelections,
+    contact: normalizedContact,
+    priority,
+  })
+
   return {
-    schemaVersion: '1.0',
+    schemaVersion: '1.1',
     source: 'method-hvac-website-quote-builder',
     integrationTarget: 'GoHighLevel',
     integrationStatus: 'ready-for-api-connection',
     submittedAt: new Date().toISOString(),
-    contact,
+    contact: normalizedContact,
+    crm: {
+      pipeline: 'Method HVAC Home Comfort Pipeline',
+      stage: 'new_quote_request',
+      leadStatus: 'new',
+      ownerQueue: 'method-hvac-coordinator',
+      priority,
+      priorityLabel: priorityProfile.label,
+      score,
+      sla: priorityProfile.sla,
+      nextAction: priorityProfile.nextAction,
+      nextActions: createNextActions(priority, normalizedEstimate, normalizedContact),
+      opportunityName: `${normalizedContact.name || 'New HVAC lead'} — ${normalizedEstimate.serviceLabel}`,
+      opportunityValueRange: normalizedEstimate.totalRange,
+      tags,
+      customFields: {
+        serviceType: normalizedEstimate.serviceLabel,
+        packageTier: normalizedEstimate.packageLabel,
+        homeSize: normalizedEstimate.homeSizeLabel,
+        preferredContact: normalizedContact.preferredContact,
+        urgency: normalizedContact.urgency,
+        estimatedLow: normalizedEstimate.totalRange.low,
+        estimatedHigh: normalizedEstimate.totalRange.high,
+      },
+    },
+    workflow: {
+      currentStep: 'lead_captured',
+      nextStep: 'coordinator_qualification',
+      milestones: [
+        'Lead captured from quote builder',
+        'Coordinator validates urgency and scope',
+        'Appointment or estimate review is scheduled',
+        'Job outcome and follow-up are logged in CRM',
+      ],
+    },
     quote: {
-      service: selections.service,
-      serviceLabel: estimate.serviceLabel,
-      packageTier: selections.packageTier,
-      packageLabel: estimate.packageLabel,
-      homeSize: selections.homeSize,
-      homeSizeLabel: estimate.homeSizeLabel,
-      equipmentAllowance: estimate.equipmentRange,
-      labourAllowance: estimate.labourRange,
-      materialAllowance: estimate.materialRange,
-      gst: estimate.gstRange,
-      totalEstimate: estimate.totalRange,
+      service: normalizedSelections.service,
+      serviceLabel: normalizedEstimate.serviceLabel,
+      packageTier: normalizedSelections.packageTier,
+      packageLabel: normalizedEstimate.packageLabel,
+      homeSize: normalizedSelections.homeSize,
+      homeSizeLabel: normalizedEstimate.homeSizeLabel,
+      equipmentAllowance: normalizedEstimate.equipmentRange,
+      labourAllowance: normalizedEstimate.labourRange,
+      materialAllowance: normalizedEstimate.materialRange,
+      gst: normalizedEstimate.gstRange,
+      totalEstimate: normalizedEstimate.totalRange,
     },
   }
 }
