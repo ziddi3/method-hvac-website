@@ -20,9 +20,9 @@
             <h1>Transparent HVAC estimates in four steps.</h1>
             <p class="lead">
               Choose your service, home size, and package level to see a practical
-              estimate range with labour, materials, and GST shown clearly. Your
-              final form submission stores a structured lead payload ready for future
-              GoHighLevel integration.
+              estimate range with labour, materials, and GST shown clearly. The final
+              submission now adds CRM priority, preferred contact method, and coordinator
+              next actions before it forwards to Method's webhook.
             </p>
           </div>
         </section>
@@ -150,6 +150,18 @@
                       </div>
                     </div>
                     <p class="detail-copy" data-selected-description></p>
+                    <div class="quote-support-grid">
+                      <article class="quote-support-card">
+                        <span class="status-badge">CRM</span>
+                        <h3>Lead payload</h3>
+                        <p>Your estimate data is converted into tags, custom fields, and coordinator next actions.</p>
+                      </article>
+                      <article class="quote-support-card">
+                        <span class="status-badge">Workflow</span>
+                        <h3>Follow-up path</h3>
+                        <p>Urgency and timeline help Method HVAC decide how quickly to call, text, or email.</p>
+                      </article>
+                    </div>
                     <div class="step-actions">
                       <button class="button button-secondary" type="button" data-prev-step>
                         Back
@@ -164,6 +176,10 @@
                     <div class="step-header">
                       <span class="eyebrow">Step 4</span>
                       <h2>Tell us how to reach you.</h2>
+                      <p>
+                        These details help the coordinator route the request correctly and
+                        avoid wasting your first call on basics.
+                      </p>
                     </div>
                     <div class="form-grid">
                       <label>
@@ -183,6 +199,27 @@
                         <input type="text" name="postalCode" autocomplete="postal-code" />
                       </label>
                       <label>
+                        Project address or community
+                        <input type="text" name="address" autocomplete="street-address" placeholder="Example: Airdrie, Mahogany, Cochrane" />
+                      </label>
+                      <label>
+                        Preferred contact
+                        <select name="preferredContact">
+                          <option>Phone call</option>
+                          <option>Text message</option>
+                          <option>Email</option>
+                        </select>
+                      </label>
+                      <label>
+                        Urgency
+                        <select name="urgency">
+                          <option>Emergency / no heat or cooling</option>
+                          <option selected>Need help this week</option>
+                          <option>Flexible planning</option>
+                          <option>Annual reminder</option>
+                        </select>
+                      </label>
+                      <label>
                         Preferred timing
                         <select name="timeline">
                           <option>As soon as possible</option>
@@ -196,7 +233,7 @@
                         <textarea
                           name="notes"
                           rows="5"
-                          placeholder="Add any current equipment details, comfort concerns, or scheduling notes."
+                          placeholder="Add equipment age, error codes, comfort concerns, photos you can send, or scheduling notes."
                         ></textarea>
                       </label>
                     </div>
@@ -245,9 +282,29 @@
                     <p>Final estimated range</p>
                     <strong data-total-range></strong>
                   </div>
+                  <div class="crm-snapshot-card">
+                    <span class="crm-chip">CRM routing preview</span>
+                    <div class="crm-snapshot-row">
+                      <span>Priority</span>
+                      <strong data-crm-priority></strong>
+                    </div>
+                    <div class="crm-snapshot-row">
+                      <span>Lead score</span>
+                      <strong data-crm-score></strong>
+                    </div>
+                    <div class="crm-snapshot-row">
+                      <span>Response target</span>
+                      <strong data-crm-sla></strong>
+                    </div>
+                    <p data-crm-next-action></p>
+                  </div>
                   <div class="estimate-notes">
                     <p class="detail-label">Estimate assumptions</p>
                     <ul class="check-list" data-assumptions-list></ul>
+                  </div>
+                  <div class="estimate-notes">
+                    <p class="detail-label">Coordinator next actions</p>
+                    <ul class="check-list crm-next-actions" data-crm-next-actions></ul>
                   </div>
                 </aside>
               </div>
