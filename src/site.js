@@ -1,6 +1,7 @@
 const navigationItems = [
   { key: 'home', href: '/index.html', label: 'Home' },
   { key: 'quote', href: '/quote.html', label: 'Build Your Quote' },
+  { key: 'workflow', href: '/workflow.html', label: 'Workflow' },
   { key: 'services', href: '/services.html', label: 'Services' },
   { key: 'about', href: '/about.html', label: 'About' },
   { key: 'contact', href: '/contact.html', label: 'Contact' },
@@ -59,9 +60,9 @@ export function initializeSite(pageKey) {
           <div class="footer-links">${renderNavigation(pageKey)}</div>
         </div>
         <div>
-          <p class="footer-heading">Method Hub</p>
-          <a class="hub-link footer-hub-link" href="https://hub.methodz.ca">Return to Method Hub</a>
-          <p class="footer-copy">Prepared for future GoHighLevel lead capture integration.</p>
+          <p class="footer-heading">CRM workflow</p>
+          <a class="hub-link footer-hub-link" href="/workflow.html">View Method workflow</a>
+          <p class="footer-copy">Lead capture, routing, and GoHighLevel-ready follow-up.</p>
         </div>
       </div>
       <div class="container site-footer-base">
@@ -97,7 +98,8 @@ function initializeContactForms() {
       const firstName = details.get('name')?.toString().trim().split(' ')[0] ?? 'there'
 
       if (status) {
-        status.textContent = `Thanks ${firstName} — your request is ready for our coordinator. While full GoHighLevel syncing is still being connected, you can also call 3683374085 for immediate scheduling.`
+        status.dataset.status = 'success'
+        status.textContent = `Thanks ${firstName} — your request is ready for our coordinator. You can also call 3683374085 for immediate scheduling.`
       }
     })
   })
