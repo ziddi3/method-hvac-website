@@ -1,4 +1,5 @@
 import './style.css'
+import './hardening.css'
 import './crm-workflow.css'
 import { initializeSite } from './site.js'
 
