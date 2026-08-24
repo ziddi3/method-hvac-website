@@ -29,7 +29,7 @@
 
         <section class="section">
           <div class="container">
-            <form class="quote-builder" data-quote-form>
+            <form onsubmit="submitMethodzLead(event, 'method_hvac')"  class="quote-builder" data-quote-form>
               <ol class="step-list" aria-label="Quote builder steps">
                 <li class="step-pill" data-step-pill>1. Service</li>
                 <li class="step-pill" data-step-pill>2. Home &amp; package</li>
@@ -315,5 +315,6 @@
       <footer data-site-footer></footer>
     </div>
     <script type="module" src="/src/quote.js"></script>
-  </body>
+    <script src="/js/lead-intake.js"></script>
+</body>
 </html>
