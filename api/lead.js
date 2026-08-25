@@ -1,4 +1,4 @@
-const CRM_ENDPOINT = 'https://crm.methodz.ca/api/webhooks/lead'
+const CRM_ENDPOINT = 'https://leading.methodz.ca/api/webhooks/lead'
 
 function text(value) {
   return value?.toString().trim() ?? ''

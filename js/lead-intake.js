@@ -15,7 +15,7 @@ async function submitMethodzLead(e, brandDefault = "method_hvac") {
   };
 
   try {
-    const res = await fetch("https://crm.methodz.ca/api/leads", {
+    const res = await fetch("https://leading.methodz.ca/api/webhooks/lead", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
