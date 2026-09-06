@@ -3,25 +3,40 @@ async function submitMethodzLead(e, brandDefault = "method_hvac") {
   const form = e.target;
   const btn = form.querySelector("button[type=submit]");
   const originalText = btn ? btn.innerText : "Submit";
-  if (btn) btn.innerText = "Submitting...";
+  if (btn) {
+    btn.disabled = true;
+    btn.innerText = "Submitting...";
+  }
+
+  const value = (selector) => form.querySelector(selector)?.value?.trim() || "";
+  const name = value("[name=name]") || value("#name") || value("[name=company]");
+  const email = value("[name=email]") || value("#email");
+  const phone = value("[name=phone]") || value("#phone");
+  const postalCode = value("[name=postal_code]") || value("[name=postalCode]") || value("#postalCode");
+  const notes = value("[name=message]") || value("[name=notes]") || value("#message");
+  const serviceType = value("[name=service_type]") || value("[name=service]") || "General HVAC";
 
   const payload = {
-    company: form.querySelector("[name=company]")?.value || form.querySelector("[name=name]")?.value || "Web Inquiry",
-    contact_email: form.querySelector("[name=email]")?.value,
-    phone: form.querySelector("[name=phone]")?.value || "",
-    industry: form.querySelector("[name=industry]")?.value || brandDefault,
-    seats: parseInt(form.querySelector("[name=seats]")?.value || "1", 10),
-    source: window.location.hostname || "web_intake"
+    brand: brandDefault,
+    source: window.location.hostname || "method-hvac-website",
+    serviceType,
+    pageUrl: window.location.href,
+    contact: {
+      name,
+      email,
+      phone,
+      postalCode,
+      notes,
+    },
   };
 
   try {
-    const res = await fetch("https://leading.methodz.ca/api/webhooks/lead", {
+    // CRM credentials stay server-side in /api/lead. Browser bundles never
+    // receive METHODZ_CRM_WEBHOOK_SECRET.
+    const res = await fetch("/api/lead", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-methodz-crm-secret": "methodz-crm-2026-secret"
-      },
-      body: JSON.stringify(payload)
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
     });
 
     if (res.ok) {
@@ -30,10 +45,13 @@ async function submitMethodzLead(e, brandDefault = "method_hvac") {
     } else {
       alert("Submission failed. Please reach out to dispatch directly.");
     }
-  } catch (err) {
-    alert("Connection error reaching CRM core.");
+  } catch {
+    alert("Connection error while submitting your request.");
   } finally {
-    if (btn) btn.innerText = originalText;
+    if (btn) {
+      btn.disabled = false;
+      btn.innerText = originalText;
+    }
   }
 }
 window.submitMethodzLead = submitMethodzLead;
