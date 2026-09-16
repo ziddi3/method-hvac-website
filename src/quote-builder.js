@@ -3,6 +3,8 @@ import {
   createLeadPayload,
   formatRange,
 } from './quote-calculations.js'
+import { readMemberParams, scaleRange, verifyMemberPass } from '../lib/memberRate.js'
+import { submitHvacBooking } from '../lib/bookingClient.js'
 
 function getSelections(form) {
   const data = new FormData(form)
@@ -25,14 +27,49 @@ function getContactDetails(form) {
     urgency: data.get('urgency')?.toString().trim() ?? 'Need help this week',
     timeline: data.get('timeline')?.toString().trim() ?? '',
     notes: data.get('notes')?.toString().trim() ?? '',
+    memberCode: data.get('memberCode')?.toString().trim().toUpperCase() ?? '',
+  }
+}
+
+function applyMemberDiscount(estimate, member) {
+  if (!member?.applied) {
+    return { ...estimate, memberRateApplied: false, memberCode: member?.code || '' }
+  }
+  const factor = 1 - (member.rate || 0.1)
+  const equipmentRange = scaleRange(estimate.equipmentRange, factor)
+  const labourRange = scaleRange(estimate.labourRange, factor)
+  const materialRange = scaleRange(estimate.materialRange, factor)
+  const subtotalRange = {
+    low: equipmentRange.low + labourRange.low + materialRange.low,
+    high: equipmentRange.high + labourRange.high + materialRange.high,
+  }
+  const gstRange = {
+    low: Math.round(subtotalRange.low * 0.05),
+    high: Math.round(subtotalRange.high * 0.05),
+  }
+  return {
+    ...estimate,
+    equipmentRange,
+    labourRange,
+    materialRange,
+    subtotalRange,
+    gstRange,
+    totalRange: {
+      low: subtotalRange.low + gstRange.low,
+      high: subtotalRange.high + gstRange.high,
+    },
+    memberRateApplied: true,
+    memberCode: member.code,
+    memberRatePercent: Math.round((member.rate || 0.1) * 100),
+    assumptions: [
+      ...estimate.assumptions,
+      `Methodz member rate ${Math.round((member.rate || 0.1) * 100)}% applied via ${member.mode || 'code'}.`,
+    ],
   }
 }
 
 function fillList(listElement, items) {
-  if (!listElement) {
-    return
-  }
-
+  if (!listElement) return
   listElement.replaceChildren(
     ...items.map((item) => {
       const listItem = document.createElement('li')
@@ -44,41 +81,27 @@ function fillList(listElement, items) {
 
 function setText(selector, value) {
   const element = document.querySelector(selector)
-
-  if (element) {
-    element.textContent = value
-  }
+  if (element) element.textContent = value
 }
 
 function updateFormStatus(status, message, statusType = 'info') {
-  if (!status) {
-    return
-  }
-
+  if (!status) return
   status.dataset.status = statusType
   status.textContent = message
 }
 
 function clearFormStatus(status) {
-  if (!status) {
-    return
-  }
-
+  if (!status) return
   delete status.dataset.status
   status.textContent = ''
 }
 
 function setSubmitState(form, isSubmitting) {
   const submitButton = form.querySelector('[type="submit"]')
-
-  if (!submitButton) {
-    return
-  }
-
+  if (!submitButton) return
   if (!submitButton.dataset.defaultLabel) {
     submitButton.dataset.defaultLabel = submitButton.textContent.trim()
   }
-
   submitButton.disabled = isSubmitting
   submitButton.textContent = isSubmitting ? 'Sending request...' : submitButton.dataset.defaultLabel
 }
@@ -86,15 +109,19 @@ function setSubmitState(form, isSubmitting) {
 function updateEstimate(form, estimate) {
   const selections = getSelections(form)
   const payloadField = form.querySelector('[name="leadPayload"]')
-  const payload = createLeadPayload(
-    {
-      selections,
-      contact: getContactDetails(form),
-    },
-    estimate,
-  )
+  const payload = createLeadPayload({ selections, contact: getContactDetails(form) }, estimate)
+  if (estimate.memberRateApplied) {
+    payload.crm.tags = [...(payload.crm.tags || []), 'methodz-member-10']
+    payload.crm.customFields = {
+      ...payload.crm.customFields,
+      memberCode: estimate.memberCode,
+      memberRateApplied: true,
+    }
+    payload.quote.memberRateApplied = true
+    payload.quote.memberCode = estimate.memberCode
+  }
 
-  const textFields = [
+  ;[
     ['[data-estimate-title]', `${estimate.serviceLabel} — ${estimate.packageLabel}`],
     ['[data-estimate-subtitle]', `${estimate.homeSizeLabel} · ${estimate.packageSummary}`],
     ['[data-selected-service]', estimate.serviceLabel],
@@ -107,14 +134,18 @@ function updateEstimate(form, estimate) {
     ['[data-subtotal-range]', formatRange(estimate.subtotalRange)],
     ['[data-gst-range]', formatRange(estimate.gstRange)],
     ['[data-total-range]', formatRange(estimate.totalRange)],
-  ]
-
-  textFields.forEach(([selector, value]) => setText(selector, value))
+  ].forEach(([selector, value]) => setText(selector, value))
 
   setText('[data-crm-priority]', payload.crm.priorityLabel)
   setText('[data-crm-score]', `${payload.crm.score}/100`)
   setText('[data-crm-sla]', payload.crm.sla)
   setText('[data-crm-next-action]', payload.crm.nextAction)
+  setText(
+    '[data-member-rate-status]',
+    estimate.memberRateApplied
+      ? `Methodz member ${estimate.memberRatePercent}% applied (${estimate.memberCode})`
+      : 'No Methodz member rate on this quote yet.',
+  )
 
   fillList(
     document.querySelector('[data-assumptions-list]'),
@@ -122,19 +153,14 @@ function updateEstimate(form, estimate) {
       `${estimate.serviceLabel} pricing is based on a ${estimate.packageLabel.toLowerCase()} package for ${estimate.homeSizeLabel.toLowerCase()}.`,
     ),
   )
-
   fillList(document.querySelector('[data-crm-next-actions]'), payload.crm.nextActions)
-
-  if (payloadField) {
-    payloadField.value = JSON.stringify(payload, null, 2)
-  }
+  if (payloadField) payloadField.value = JSON.stringify(payload, null, 2)
 }
 
 function showStep(stepPanels, stepPills, nextStepIndex) {
   stepPanels.forEach((panel, index) => {
     panel.hidden = index !== nextStepIndex
   })
-
   stepPills.forEach((pill, index) => {
     pill.classList.toggle('is-active', index === nextStepIndex)
     pill.classList.toggle('is-complete', index < nextStepIndex)
@@ -143,23 +169,43 @@ function showStep(stepPanels, stepPills, nextStepIndex) {
 
 export function initializeQuoteBuilder() {
   const form = document.querySelector('[data-quote-form]')
-
-  if (!form) {
-    return
-  }
+  if (!form) return
 
   form.method = 'post'
-
   const stepPanels = [...form.querySelectorAll('[data-step-panel]')]
   const stepPills = [...form.querySelectorAll('[data-step-pill]')]
   const status = form.querySelector('[data-quote-status]')
+  const memberField = form.querySelector('[name="memberCode"]')
   let activeStep = 0
+  let member = { applied: false, rate: 0, code: '', mode: null }
+
+  const incoming = readMemberParams(window.location.search)
+  if (memberField && incoming.code) memberField.value = incoming.code
 
   const syncEstimate = () => {
-    const estimate = calculateQuote(getSelections(form))
+    const estimate = applyMemberDiscount(calculateQuote(getSelections(form)), member)
     updateEstimate(form, estimate)
     return estimate
   }
+
+  verifyMemberPass({
+    code: incoming.code || memberField?.value,
+    token: incoming.token,
+    email: incoming.email,
+  }).then((result) => {
+    member = result
+    if (memberField && result.code) memberField.value = result.code
+    syncEstimate()
+  })
+
+  memberField?.addEventListener('change', async () => {
+    member = await verifyMemberPass({
+      code: memberField.value,
+      token: incoming.token,
+      email: incoming.email || getContactDetails(form).email,
+    })
+    syncEstimate()
+  })
 
   form.querySelectorAll('[data-next-step]').forEach((button) => {
     button.addEventListener('click', () => {
@@ -181,16 +227,12 @@ export function initializeQuoteBuilder() {
     if (status?.dataset.status === 'success' || status?.dataset.status === 'error') {
       clearFormStatus(status)
     }
-
     syncEstimate()
   })
 
   form.addEventListener('submit', async (event) => {
     event.preventDefault()
-
-    if (!form.reportValidity()) {
-      return
-    }
+    if (!form.reportValidity()) return
 
     const estimate = syncEstimate()
     const contact = getContactDetails(form)
@@ -202,12 +244,9 @@ export function initializeQuoteBuilder() {
 
     try {
       const payload = payloadField?.value ? JSON.parse(payloadField.value) : {}
-
       const response = await fetch('/api/lead', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           brand: 'method_hvac',
           source: 'method_hvac_website',
@@ -221,11 +260,15 @@ export function initializeQuoteBuilder() {
           submittedAt: new Date().toISOString(),
         }),
       })
-
       const result = await response.json().catch(() => ({}))
-
       if (!response.ok) {
         throw new Error(result.error ?? `CRM webhook failed with ${response.status}`)
+      }
+
+      try {
+        await submitHvacBooking({ contact, quote: estimate, member })
+      } catch (bookingError) {
+        console.warn(bookingError)
       }
 
       updateFormStatus(
@@ -235,7 +278,6 @@ export function initializeQuoteBuilder() {
       )
     } catch (error) {
       console.error(error)
-
       updateFormStatus(
         status,
         'Your estimate was calculated, but the CRM connection failed. Please call or email Method HVAC directly so the request is not missed.',
