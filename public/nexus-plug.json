@@ -1,0 +1,28 @@
+{
+  "protocol": "methodz.nexus-plug.v1",
+  "socket": {
+    "protocol": "methodz.nexus-socket.v1",
+    "socketId": "socket:hvac",
+    "dockId": "module-hvac",
+    "moduleId": "module-hvac",
+    "repository": "ziddi3/method-hvac-website",
+    "role": "storefront",
+    "parentDockId": "nexus-hub",
+    "public": true,
+    "entrypoint": "https://method-hvac.ca",
+    "provides": ["traversal", "projection"],
+    "requests": ["surface-manifestation"]
+  },
+  "projection": {
+    "protocol": "methodz.nexus-projection.v1",
+    "socketId": "socket:hvac",
+    "moduleId": "module-hvac",
+    "state": "under-construction",
+    "doorwayOpen": false,
+    "emissiveScale": 0.15,
+    "ambientScale": 0.2,
+    "attention": "notice",
+    "observedAt": "2026-10-23T06:45:00.000Z",
+    "sourceRevision": null
+  }
+}
