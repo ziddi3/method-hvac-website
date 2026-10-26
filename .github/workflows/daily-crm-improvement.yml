@@ -38,28 +38,28 @@ jobs:
             }
 
             const title = `Daily Method HVAC CRM/workflow/UI sweep - ${today}`;
-            const body = `## Daily improvement focus
-
-Review the Method HVAC repository and ship one small improvement today.
-
-### Required checks
-- [ ] CRM lead payload still includes priority, score, SLA, tags, custom fields, and coordinator next actions.
-- [ ] Quote workflow still feels clear on desktop and mobile.
-- [ ] Customer-facing copy reduces friction and explains next steps.
-- [ ] Styling, spacing, and accessibility are cleaner than yesterday.
-- [ ] Any change is documented or covered by a focused test when practical.
-
-### Suggested targets
-1. Improve GoHighLevel/custom CRM field mapping.
-2. Tighten quote-builder form wording or validation.
-3. Improve the Method workflow page visuals.
-4. Add a small test for CRM routing behavior.
-5. Review webhook error states and customer fallback messaging.
-
-### Definition of done
-- [ ] One commit, pull request, or follow-up issue exists for the improvement.
-- [ ] The change supports CRM build-out, workflow clarity, or appearance polish.
-`;
+            const body = `## Daily improvement focus            
+            
+            Review the Method HVAC repository and ship one small improvement today.
+            
+            ### Required checks
+            - [ ] CRM lead payload still includes priority, score, SLA, tags, custom fields, and coordinator next actions.
+            - [ ] Quote workflow still feels clear on desktop and mobile.
+            - [ ] Customer-facing copy reduces friction and explains next steps.
+            - [ ] Styling, spacing, and accessibility are cleaner than yesterday.
+            - [ ] Any change is documented or covered by a focused test when practical.
+            
+            ### Suggested targets
+            1. Improve GoHighLevel/custom CRM field mapping.
+            2. Tighten quote-builder form wording or validation.
+            3. Improve the Method workflow page visuals.
+            4. Add a small test for CRM routing behavior.
+            5. Review webhook error states and customer fallback messaging.
+            
+            ### Definition of done
+            - [ ] One commit, pull request, or follow-up issue exists for the improvement.
+            - [ ] The change supports CRM build-out, workflow clarity, or appearance polish.
+            `;
 
             await github.rest.issues.create({
               owner,
